@@ -14,6 +14,7 @@ import os
 import django_heroku
 import dj_database_url
 from decouple import config,Csv
+from decouple import config
 
 SECRET_KEY = '&u)v++wd=sun1r$h8^r6%_zwric35y($p*w8eq!6g60#-_j^dx'
 
@@ -63,7 +64,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'tinymce',
 
 ]
 

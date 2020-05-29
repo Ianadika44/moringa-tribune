@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404,HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 import datetime as dt
 from .models import Article
 from django.http import JsonResponse
@@ -9,7 +9,9 @@ from .models import MoringaMerch
 from .serializer import MerchSerializer
 from rest_framework import status
 from .permissions import IsAdminOrReadOnly
-from .forms import NewsLetterForm
+from .forms import NewArticleForm, NewsLetterForm
+from .email import send_welcome_email
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -26,9 +28,9 @@ def news_today(request):
             name = form.cleaned_data['your_name']
             email = form.cleaned_data['email']
 
-            recipient = NewsLetterRecipients(name = name,email =email)
+            recipient = NewsLetterRecipients(name=name, email=email)
             recipient.save()
-            send_welcome_email(name,email)
+            send_welcome_email(name, email)
 
             HttpResponseRedirect('news_today')
     date = dt.date.today()
@@ -66,13 +68,19 @@ def search_results(request):
         message = "You haven't searched for any term"
         return render(request, 'all-news/search.html', {"message": message})
 
-
-def article(request, article_id):
-    try:
-        article = Article.objects.get(id=article_id)
-    except DoesNotExist:
-        raise Http404()
-    return render(request, "all-news/article.html", {"article": article})
+@login_required(login_url='/accounts/login/')
+def new_article(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = NewArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.editor = current_user
+            article.save()
+        return redirect('newsToday')
+    else:
+        form = NewArticleForm()
+    return render(request, 'new_article.html', {"form": form})
 
 
 def newsletter(request):
@@ -128,3 +136,6 @@ class MerchDescription(APIView):
         merch = self.get_merch(pk)
         merch.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
