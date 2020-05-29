@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 import datetime as dt
-from .models import Article
+from .models import Article, NewsLetterRecipients
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -67,6 +67,16 @@ def search_results(request):
     else:
         message = "You haven't searched for any term"
         return render(request, 'all-news/search.html', {"message": message})
+
+
+# @login_required(login_url='/accounts/login/')
+# def article(request, article_id):
+#     try:
+#         article = Article.objects.get(id=article_id)
+#     except DoesNotExist:
+#         raise Http404()
+#     return render(request, "all-news/article.html", {"article": article})
+
 
 @login_required(login_url='/accounts/login/')
 def new_article(request):
@@ -136,6 +146,3 @@ class MerchDescription(APIView):
         merch = self.get_merch(pk)
         merch.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
